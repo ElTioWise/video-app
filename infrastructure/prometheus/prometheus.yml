@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s # Frecuencia con la que se recolectan métricas
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'nestjs-apps'
+    static_configs:
+      # Aquí apuntas a cada uno de tus microservicios.
+      # El puerto debe ser el que expones en tu app para las métricas (ej. /metrics).
+      - targets: ['auth-service:3001', 'users-service:3002', 'media-service:3003']

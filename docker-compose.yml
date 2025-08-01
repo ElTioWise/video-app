@@ -17,10 +17,10 @@ services:
     depends_on:
       auth-service:
         condition: service_healthy
-      users-service:
-        condition: service_healthy
-      media-service:
-        condition: service_healthy
+#      users-service:
+#        condition: service_healthy
+#      media-service:
+#        condition: service_healthy
     restart: unless-stopped
 
   #============================================
@@ -59,71 +59,71 @@ services:
           memory: 256M
     restart: unless-stopped
 
-  users-service:
-    build:
-      context: ./users-service
-      dockerfile: Dockerfile
-    container_name: users-service
-    env_file: ./.env
-    environment:
-      - PORT=3002
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-    networks:
-      - app_network
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-    restart: unless-stopped
-
-  media-service:
-    build:
-      context: ./media-service
-      dockerfile: Dockerfile
-    container_name: media-service
-    env_file: ./.env
-    environment:
-      - PORT=3003
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-    networks:
-      - app_network
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-    restart: unless-stopped
+#  users-service:
+#    build:
+#      context: ./users-service
+#      dockerfile: Dockerfile
+#    container_name: users-service
+#    env_file: ./.env
+#    environment:
+#      - PORT=3002
+#      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}
+#      - RABBITMQ_URL=amqp://rabbitmq:5672
+#    networks:
+#      - app_network
+#    depends_on:
+#      postgres-db:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#      start_period: 60s
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.5'
+#          memory: 512M
+#        reservations:
+#          cpus: '0.25'
+#          memory: 256M
+#    restart: unless-stopped
+#
+#  media-service:
+#    build:
+#      context: ./media-service
+#      dockerfile: Dockerfile
+#    container_name: media-service
+#    env_file: ./.env
+#    environment:
+#      - PORT=3003
+#      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}
+#      - RABBITMQ_URL=amqp://rabbitmq:5672
+#    networks:
+#      - app_network
+#    depends_on:
+#      postgres-db:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#      start_period: 60s
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.5'
+#          memory: 512M
+#        reservations:
+#          cpus: '0.25'
+#          memory: 256M
+#    restart: unless-stopped
 
   #============================================
   # Base de Datos

@@ -4,60 +4,42 @@ services:
   #============================================
   # API Gateway (Punto de entrada único)
   #============================================
-  api-gateway:
-    image: nginx:alpine
-    container_name: api-gateway
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./infrastructure/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - app_network
-    depends_on:
-      auth-service:
-        condition: service_healthy
-#      users-service:
-#        condition: service_healthy
-#      media-service:
-#        condition: service_healthy
-    restart: unless-stopped
 
   #============================================
   # Microservicios de la Aplicación
   #============================================
-  auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: Dockerfile
-    container_name: auth-service
-    env_file: ./.env
-    environment:
-      - PORT=3001
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-    networks:
-      - app_network
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-    restart: unless-stopped
+#  auth-service:
+#    build:
+#      context: ./auth-service
+#      dockerfile: Dockerfile
+#    container_name: auth-service
+#    env_file: ./.env
+#    environment:
+#      - PORT=3001
+#      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:5432/${POSTGRES_DB}
+#      - RABBITMQ_URL=amqp://rabbitmq:5672
+#    networks:
+#      - app_network
+#    depends_on:
+#      postgres-db:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#      start_period: 60s
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.5'
+#          memory: 512M
+#        reservations:
+#          cpus: '0.25'
+#          memory: 256M
+#    restart: unless-stopped
 
 #  users-service:
 #    build:
@@ -152,7 +134,7 @@ services:
   # Agente de Mensajes (Message Broker)
   #============================================
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:4.1.2-management-alpine
     container_name: rabbitmq
     ports:
       - "5672:5672"   # Puerto para clientes AMQP
@@ -161,6 +143,9 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq/
     networks:
       - app_network
+    environment:
+      "RABBITMQ_DEFAULT_PASS": "admin"
+      "RABBITMQ_DEFAULT_USER": "admin"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
@@ -238,24 +223,6 @@ services:
       - app_network
     depends_on:
       - prometheus
-    restart: unless-stopped
-
-  #============================================
-  # Gestor de Secretos
-  #============================================
-  vault:
-    image: hashicorp/vault:latest
-    container_name: vault
-    ports:
-      - "8200:8200"
-    environment:
-      - VAULT_DEV_ROOT_TOKEN_ID=my-root-token # Cambia esto por un token seguro
-      - VAULT_ADDR=http://0.0.0.0:8200
-    cap_add:
-      - IPC_LOCK # Necesario para que Vault bloquee la memoria
-    command: server -dev # Ejecuta Vault en modo de desarrollo (no para producción)
-    networks:
-      - app_network
     restart: unless-stopped
 
 #============================================

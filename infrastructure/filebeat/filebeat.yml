@@ -1,0 +1,92 @@
+# ==========================================
+# FILEBEAT CONFIGURATION
+# filebeat/filebeat.yml
+# ==========================================
+
+filebeat.inputs:
+  - type: container
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+
+    # Configuración específica para logs de Docker
+    processors:
+      - add_docker_metadata:
+          host: "unix:///var/run/docker.sock"
+
+      # Parsear logs JSON
+      - decode_json_fields:
+          fields: ["message"]
+          target: ""
+          overwrite_keys: true
+
+      # Agregar campos adicionales
+      - add_fields:
+          target: ''
+          fields:
+            logstash_beat: filebeat
+            environment: "${NODE_ENV:development}"
+
+  # Logs de archivos específicos (opcional)
+  - type: log
+    enabled: false
+    paths:
+      - /app/logs/*.log
+    fields:
+      service: api-gateway
+      logtype: application
+    fields_under_root: true
+
+# ==========================================
+# OUTPUT CONFIGURATION
+# ==========================================
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  template.name: "filebeat"
+  template.pattern: "filebeat-*"
+  template.settings:
+    index.number_of_shards: 1
+    index.number_of_replicas: 0
+
+# ==========================================
+# KIBANA CONFIGURATION
+# ==========================================
+setup.kibana:
+  host: "kibana:5601"
+
+# ==========================================
+# TEMPLATE CONFIGURATION
+# ==========================================
+setup.template:
+  name: "filebeat"
+  pattern: "filebeat-*"
+  enabled: true
+  settings:
+    index:
+      number_of_shards: 1
+      number_of_replicas: 0
+
+# ==========================================
+# DASHBOARD SETUP
+# ==========================================
+setup.dashboards:
+  enabled: true
+
+# ==========================================
+# LOGGING CONFIGURATION
+# ==========================================
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+# ==========================================
+# MONITORING
+# ==========================================
+monitoring:
+  enabled: true
+  elasticsearch:
+    hosts: ["elasticsearch:9200"]

@@ -138,6 +138,7 @@ services:
     environment:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_SERVER_CORS_ALLOW_ORIGIN=*
     command: server /data --console-address ":9001"
   #============================================
   # Agente de Mensajes (Message Broker)
